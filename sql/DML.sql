@@ -376,14 +376,13 @@ WHERE sponsorshipID = :sponsorshipID_selected_from_browse_sponsorships_page;
 -- 10. STAFF ASSIGNMENTS QUERIES (M:N between Staff and Festivals)
 
 
--- get all Staff Assignments with Staff, Role, and Festival information for the Browse Staff Assignments page
+-- get all Staff Assignments with Staff and Festival information for the Browse Staff Assignments page
 SELECT sa.staffAssignmentID, sa.assignedDate, sa.hoursWorked, sa.shiftNotes,
        st.staffID, CONCAT(st.firstName, ' ', st.lastName) AS staffName,
-       r.roleName, r.hourlyRate,
+       st.role, st.hourlyRate,
        f.festivalID, f.festivalName
 FROM staffAssignments sa
 INNER JOIN staff st ON sa.staffID = st.staffID
-INNER JOIN roles r ON st.roleID = r.roleID
 INNER JOIN festivals f ON sa.festivalID = f.festivalID
 ORDER BY f.festivalName, st.lastName, st.firstName;
 
