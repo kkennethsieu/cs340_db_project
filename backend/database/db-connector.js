@@ -8,10 +8,12 @@ const pool = mysql
 		connectionLimit: 10,
 		host: "classmysql.engr.oregonstate.edu",
 		user: "cs340_patelsuv",
-		password: "YOUR_PASSWORD",
+		password: "3532",
 		database: "cs340_patelsuv",
 	})
 	.promise(); // This makes it so we can use async / wait
 
+module.exports = pool;
+
 // Export it for use in our application
-MediaSourceHandle.exports = pool;
+// MediaSourceHandle.exports = pool;
