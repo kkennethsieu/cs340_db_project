@@ -13,8 +13,16 @@ app.use(express.json());
 //Routes
 
 const festivalRouter = require("./festivals.route.js");
+const artistsRouter = require("./artists.route.js");
+const sponsorsRouter = require("./sponsors.route.js");
+const staffRouter = require("./staff.route.js");
+const vendorsRouter = require("./vendors.route.js");
 
 app.use("/festivals", festivalRouter);
+app.use("/artists", artistsRouter);
+app.use("/sponsors", sponsorsRouter);
+app.use("/staff", staffRouter);
+app.use("/vendors", vendorsRouter);
 
 app.listen(PORT, function () {
 	console.log(
