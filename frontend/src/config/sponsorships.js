@@ -1,26 +1,32 @@
 export const sponsorshipColumns = [
-	{ header: "ID", accessor: "sponsorshipID" },
-	{ header: "Sponsor ID", accessor: "sponsorID" },
-	{ header: "Festival ID", accessor: "festivalID" },
+	{ header: "Sponsorship ID", accessor: "sponsorshipID" },
+	{ header: "Sponsor Name", accessor: "sponsorName" },
+	{ header: "Sponsor Industry", accessor: "industry" },
+	{ header: "Festival Name", accessor: "festivalName" },
 	{ header: "Amount", accessor: "sponsorshipAmount" },
 	{ header: "Tier", accessor: "sponsorshipTier" },
 	{ header: "Contract Date", accessor: "contractDate" },
 	{ header: "Benefits", accessor: "benefits" },
 ];
 
-export const sponsorshipFields = [
+export const sponsorshipFields = (sponsors, festivals) => [
 	{
 		name: "sponsorID",
-		label: "Sponsor ID",
-		type: "number",
-		placeholder: "Enter sponsor ID",
+		label: "Sponsor",
+		options: sponsors.map((s) => ({
+			value: s.sponsorID,
+			label: s.sponsorName,
+		})),
 	},
 	{
 		name: "festivalID",
-		label: "Festival ID",
-		type: "number",
-		placeholder: "Enter festival ID",
+		label: "Festival",
+		options: festivals.map((f) => ({
+			value: f.festivalID,
+			label: f.festivalName,
+		})),
 	},
+
 	{
 		name: "sponsorshipAmount",
 		label: "Sponsorship Amount",

@@ -1,7 +1,8 @@
 export const performanceColumns = [
-	{ header: "ID", accessor: "performanceID" },
-	{ header: "Artist ID", accessor: "artistID" },
-	{ header: "Stage ID", accessor: "stageID" },
+	{ header: "Performance ID", accessor: "performanceID" },
+	{ header: "Artist Name", accessor: "artistName" },
+	{ header: "Stage Name", accessor: "stageName" },
+	{ header: "Festival", accessor: "festivalName" },
 	{ header: "Performance Date", accessor: "performanceDate" },
 	{ header: "Start Time", accessor: "startTime" },
 	{ header: "End Time", accessor: "endTime" },
@@ -9,19 +10,24 @@ export const performanceColumns = [
 	{ header: "Soundcheck Time", accessor: "soundcheckTime" },
 ];
 
-export const performanceFields = [
+export const performanceFields = (artists, stages) => [
 	{
 		name: "artistID",
-		label: "Artist ID",
-		type: "number",
-		placeholder: "Enter artist ID",
+		label: "Artist Name",
+		options: artists.map((a) => ({
+			value: a.artistID,
+			label: a.artistName,
+		})),
 	},
 	{
 		name: "stageID",
-		label: "Stage ID",
-		type: "number",
-		placeholder: "Enter stage ID",
+		label: "Stage Name",
+		options: stages.map((s) => ({
+			value: s.stageID,
+			label: s.stageName,
+		})),
 	},
+
 	{ name: "performanceDate", label: "Performance Date", type: "date" },
 	{ name: "startTime", label: "Start Time", type: "time" },
 	{ name: "endTime", label: "End Time", type: "time" },

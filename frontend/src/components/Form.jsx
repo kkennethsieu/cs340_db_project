@@ -44,14 +44,34 @@ export default function Form({
 					{field.label && (
 						<label className="text-sm font-medium mb-1">{field.label}</label>
 					)}
-					<input
-						type={field.type || "text"}
-						name={field.name}
-						placeholder={field.placeholder || ""}
-						value={formData[field.name] || ""}
-						onChange={handleChange}
-						className="border px-2 py-1 rounded"
-					/>
+
+					{field.options ? (
+						// Render a dropdown if options exist
+						<select
+							name={field.name}
+							value={formData[field.name] || ""}
+							onChange={handleChange}
+							className="border px-2 py-1 rounded">
+							<option value="">Select {field.label}</option>
+							{field.options.map((opt) => (
+								<option
+									key={opt.value}
+									value={opt.value}>
+									{opt.label}
+								</option>
+							))}
+						</select>
+					) : (
+						// Otherwise, render a normal input
+						<input
+							type={field.type || "text"}
+							name={field.name}
+							placeholder={field.placeholder || ""}
+							value={formData[field.name] || ""}
+							onChange={handleChange}
+							className="border px-2 py-1 rounded"
+						/>
+					)}
 				</div>
 			))}
 

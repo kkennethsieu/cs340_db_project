@@ -12,6 +12,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@iconify-icons/mdi": "^1.2.48",
 		"@iconify/icons-mdi": "^1.2.48",
 		"@iconify/react": "^6.0.2",
 		"express": "^4.21.2",

@@ -1,24 +1,30 @@
 export const staffAssignmentColumns = [
-	{ header: "ID", accessor: "staffAssignmentID" },
-	{ header: "Staff ID", accessor: "staffID" },
-	{ header: "Festival ID", accessor: "festivalID" },
+	{ header: "Assignment ID", accessor: "staffAssignmentID" },
+	{ header: "Festival Name", accessor: "festivalName" },
+	{ header: "Staff Name", accessor: "staffName" },
+	{ header: "Role", accessor: "role" },
+	{ header: "Hourly Rate", accessor: "hourlyRate" },
 	{ header: "Assigned Date", accessor: "assignedDate" },
 	{ header: "Hours Worked", accessor: "hoursWorked" },
 	{ header: "Shift Notes", accessor: "shiftNotes" },
 ];
 
-export const staffAssignmentFields = [
+export const staffAssignmentFields = (staff, festivals) => [
 	{
 		name: "staffID",
-		label: "Staff ID",
-		type: "number",
-		placeholder: "Enter staff ID",
+		label: "Staff",
+		options: staff.map((s) => ({
+			value: s.staffID,
+			label: s.staffName,
+		})),
 	},
 	{
 		name: "festivalID",
-		label: "Festival ID",
-		type: "number",
-		placeholder: "Enter festival ID",
+		label: "Festival",
+		options: festivals.map((f) => ({
+			value: f.festivalID,
+			label: f.festivalName,
+		})),
 	},
 	{ name: "assignedDate", label: "Assigned Date", type: "date" },
 	{

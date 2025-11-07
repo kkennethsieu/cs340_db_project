@@ -1,16 +1,20 @@
 export const artistColumns = [
-	{ header: "ID", accessor: "artistID" },
-	{ header: "Name", accessor: "name" },
+	{ header: "Artist ID", accessor: "artistID" },
+	{ header: "Artist Name", accessor: "artistName" },
 	{ header: "Genre", accessor: "genre" },
 	{ header: "Booking Fee", accessor: "bookingFee" },
-	{ header: "Email", accessor: "email" },
-	{ header: "Phone", accessor: "phone" },
+	{ header: "Contact Email", accessor: "contactEmail" },
+	{ header: "Contact Phone", accessor: "contactPhone" },
 	{ header: "Country", accessor: "country" },
-	{ header: "Website", accessor: "website" },
+	{ header: "Website", accessor: "websiteURL" },
 ];
 
 export const artistFields = [
-	{ name: "name", label: "Artist Name", placeholder: "Enter artist name" },
+	{
+		name: "artistName",
+		label: "Artist Name",
+		placeholder: "Enter artist name",
+	},
 	{ name: "genre", label: "Genre", placeholder: "Enter genre" },
 	{
 		name: "bookingFee",
@@ -19,17 +23,16 @@ export const artistFields = [
 		placeholder: "Enter booking fee",
 	},
 	{
-		name: "email",
-		label: "Email",
+		name: "contactEmail",
+		label: "Contact Email",
 		type: "email",
 		placeholder: "Enter email",
 	},
 	{
-		name: "phone",
-		label: "Phone",
-		type: "number",
+		name: "contactPhone",
+		label: "Contact Phone",
 		placeholder: "Enter number",
 	},
 	{ name: "country", label: "Country", placeholder: "Enter country" },
-	{ name: "website", label: "Website", placeholder: "Enter website" },
+	{ name: "websiteURL", label: "Website", placeholder: "Enter website" },
 ];

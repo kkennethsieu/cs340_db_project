@@ -1,52 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { vendorColumns, vendorFields } from "../config/vendors";
 
-const fakeVendors = [
-	{
-		vendorID: 1,
-		vendorName: "Fresh Foods Co.",
-		vendorType: "Food",
-		contactEmail: "contact@freshfoods.com",
-		contactPhone: "+1 555 123 4567",
-		businessLicense: "FF12345",
-	},
-	{
-		vendorID: 2,
-		vendorName: "Sound Systems Ltd.",
-		vendorType: "Equipment",
-		contactEmail: "info@soundsystems.com",
-		contactPhone: "+1 555 987 6543",
-		businessLicense: "SS67890",
-	},
-	{
-		vendorID: 3,
-		vendorName: "Green Decor",
-		vendorType: "Decoration",
-		contactEmail: "hello@greendecor.com",
-		contactPhone: "+44 20 7946 0958",
-		businessLicense: "GD45678",
-	},
-	{
-		vendorID: 4,
-		vendorName: "Stage Lighting Inc.",
-		vendorType: "Lighting",
-		contactEmail: "support@stagelighting.com",
-		contactPhone: "+61 2 9876 5432",
-		businessLicense: "SL78901",
-	},
-];
+const backendURL = "http://classwork.engr.oregonstate.edu:9040";
 
 function VendorsPage() {
-	const [data, setData] = useState(fakeVendors);
+	const [data, setData] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState(null);
 
 	const handleSubmit = (item) => {
 		console.log(`Submitted, ${item}`);
 	};
 	const handleDelete = (item) => {
 		console.log(`Deleted ${item}`);
-		setData((prev) => prev.filter((a) => a.artistID !== item.artistID));
+		setData((prev) => prev.filter((a) => a.vendorID !== item.vendorID));
 	};
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const res = await fetch(`${backendURL}/vendors`);
+				if (!res.ok) throw new Error("Network response was not ok");
+				const json = await res.json();
+				setData(json);
+			} catch (err) {
+				setError(err);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchData();
+	}, []);
+
+	if (isLoading) return <p>Loading vendors...</p>;
 
 	return (
 		<>

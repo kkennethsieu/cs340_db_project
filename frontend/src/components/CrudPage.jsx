@@ -75,6 +75,7 @@ export default function CrudPage({
 				<Table
 					columns={columns}
 					data={initialData}
+					idAccessor={idAccessor}
 					onEdit={(item) => {
 						setSelectedItem(item);
 						setOpenModal(true);

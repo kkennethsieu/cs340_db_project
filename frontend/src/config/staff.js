@@ -1,5 +1,5 @@
 export const staffColumns = [
-	{ header: "ID", accessor: "staffID" },
+	{ header: "Staff ID", accessor: "staffID" },
 	{ header: "First Name", accessor: "firstName" },
 	{ header: "Last Name", accessor: "lastName" },
 	{ header: "Email", accessor: "email" },

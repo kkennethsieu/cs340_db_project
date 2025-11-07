@@ -1,24 +1,30 @@
 export const vendorAssignmentColumns = [
-	{ header: "ID", accessor: "assignmentID" },
-	{ header: "Vendor ID", accessor: "vendorID" },
-	{ header: "Festival ID", accessor: "festivalID" },
+	{ header: "Assignment ID", accessor: "assignmentID" },
+	{ header: "Festival", accessor: "festivalName" },
+
+	{ header: "Vendor Name", accessor: "vendorName" },
+	{ header: "Vendor Type", accessor: "vendorType" },
 	{ header: "Booth Number", accessor: "boothNumber" },
 	{ header: "Registration Fee", accessor: "registrationFee" },
 	{ header: "Assignment Date", accessor: "assignmentDate" },
 ];
 
-export const vendorAssignmentFields = [
+export const vendorAssignmentFields = (vendors, festivals) => [
 	{
 		name: "vendorID",
-		label: "Vendor ID",
-		type: "number",
-		placeholder: "Enter vendor ID",
+		label: "Vendor",
+		options: vendors.map((v) => ({
+			value: v.vendorID,
+			label: v.vendorName,
+		})),
 	},
 	{
 		name: "festivalID",
-		label: "Festival ID",
-		type: "number",
-		placeholder: "Enter festival ID",
+		label: "Festival",
+		options: festivals.map((f) => ({
+			value: f.festivalID,
+			label: f.festivalName,
+		})),
 	},
 	{
 		name: "boothNumber",

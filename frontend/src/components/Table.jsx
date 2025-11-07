@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 export default function Table({
 	columns,
 	data,
+	idAccessor,
 	onDelete,
 	onEdit,
 	showViewMore = false,
@@ -37,7 +38,7 @@ export default function Table({
 				<tbody className="divide-y divide-gray-200">
 					{data.map((row, rowIndex) => (
 						<tr
-							key={rowIndex}
+							key={row[idAccessor]}
 							className="hover:bg-gray-100">
 							{columns.map((col) => (
 								<td

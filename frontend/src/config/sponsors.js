@@ -1,5 +1,5 @@
 export const sponsorsColumns = [
-	{ header: "ID", accessor: "sponsorID" },
+	{ header: "Sponsor ID", accessor: "sponsorID" },
 	{ header: "Sponsor Name", accessor: "sponsorName" },
 	{ header: "Industry", accessor: "industry" },
 	{ header: "Contact Email", accessor: "contactEmail" },
@@ -28,7 +28,7 @@ export const sponsorsFields = [
 	},
 	{
 		name: "websiteURL",
-		label: "Website URL",
+		label: "Website",
 		type: "url",
 		placeholder: "Enter website URL (optional)",
 	},

@@ -1,26 +1,31 @@
 import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
-import { sponsorsColumns, sponsorsFields } from "../config/sponsors";
+import { stageColumns, stageFields } from "../config/stages";
 
 const backendURL = "http://classwork.engr.oregonstate.edu:9040";
 
-function SponsorsPage() {
-	const [data, setData] = useState([]);
+function StagesPage() {
+	const [data, setData] = useState({
+		stages: [],
+		festivals: [],
+	});
 	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState(null);
-
+	const [error, setError] = useState(false);
 	const handleSubmit = (item) => {
 		console.log(`Submitted, ${item}`);
 	};
 	const handleDelete = (item) => {
 		console.log(`Deleted ${item}`);
-		setData((prev) => prev.filter((a) => a.sponsorID !== item.sponsorID));
+		setData((prev) => ({
+			...prev,
+			stages: prev.stages.filter((s) => s.stageID !== item.stageID),
+		}));
 	};
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				const res = await fetch(`${backendURL}/sponsors`);
+				const res = await fetch(`${backendURL}/stages`);
 				if (!res.ok) throw new Error("Network response was not ok");
 				const json = await res.json();
 				setData(json);
@@ -34,23 +39,22 @@ function SponsorsPage() {
 		fetchData();
 	}, []);
 
-	if (isLoading) return <p>Loading sponsors...</p>;
-
+	if (isLoading) return <p>Loading stages...</p>;
 	return (
 		<>
 			<CrudPage
-				title="Sponsors"
-				columns={sponsorsColumns}
-				fields={sponsorsFields}
-				initialData={data}
+				title="Stages"
+				columns={stageColumns}
+				fields={stageFields(data.festivals)}
+				initialData={data.stages}
 				setData={setData}
-				onSubmit={handleSubmit}
 				onDelete={handleDelete}
-				idAccessor="sponsorID"
-				displayNameAccessor="sponsorName"
+				onSubmit={handleSubmit}
+				idAccessor="stageID"
+				displayNameAccessor="stageName"
 			/>
 		</>
 	);
 }
 
-export default SponsorsPage;
+export default StagesPage;

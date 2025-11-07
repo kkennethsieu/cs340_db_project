@@ -1,6 +1,6 @@
 export const stageColumns = [
-	{ header: "ID", accessor: "stageID" },
-	{ header: "Festival ID", accessor: "festivalID" },
+	{ header: "Stage ID", accessor: "stageID" },
+	{ header: "Festival Name", accessor: "festivalName" },
 	{ header: "Stage Name", accessor: "stageName" },
 	{ header: "Capacity", accessor: "capacity" },
 	{ header: "Stage Type", accessor: "stageType" },
@@ -8,12 +8,14 @@ export const stageColumns = [
 	{ header: "Has Cover", accessor: "hasCover" },
 ];
 
-export const stageFields = [
+export const stageFields = (festivals) => [
 	{
 		name: "festivalID",
-		label: "Festival ID",
-		type: "number",
-		placeholder: "Enter festival ID",
+		label: "Festival",
+		options: festivals.map((f) => ({
+			value: f.festivalID,
+			label: f.festivalName,
+		})),
 	},
 	{ name: "stageName", label: "Stage Name", placeholder: "Enter stage name" },
 	{

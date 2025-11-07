@@ -3,10 +3,12 @@
 
 // Express
 const express = require("express");
+const cors = require("cors");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(cors());
 
 const PORT = 9040;
 
@@ -14,9 +16,9 @@ const PORT = 9040;
 const db = require("./database/db-connector");
 
 // Handlebars
-const { engine } = require("express-handlebars");
-app.engine(".hbs", engine({ extname: ".hbs" }));
-app.set("view engine", ".hbs");
+// const { engine } = require("express-handlebars");
+// app.engine(".hbs", engine({ extname: ".hbs" }));
+// app.set("view engine", ".hbs");
 
 // ########################################
 // ########## PAGE ROUTES
@@ -24,7 +26,7 @@ app.set("view engine", ".hbs");
 // Home page
 app.get("/", async function (req, res) {
 	try {
-		res.render("home");
+		res.send("home");
 	} catch (error) {
 		console.error("Error rendering home page:", error);
 		res.status(500).send("An error occurred while rendering the page.");
@@ -36,7 +38,7 @@ app.get("/festivals", async function (req, res) {
 	try {
 		const query = "SELECT * FROM festivals ORDER BY startDate";
 		const [festivals] = await db.query(query);
-		res.render("festivals", { festivals: festivals });
+		res.json(festivals);
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -50,7 +52,7 @@ app.get("/artists", async function (req, res) {
 	try {
 		const query = "SELECT * FROM artists ORDER BY artistName";
 		const [artists] = await db.query(query);
-		res.render("artists", { artists: artists });
+		res.json(artists);
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -72,7 +74,7 @@ app.get("/stages", async function (req, res) {
 		const [stages] = await db.query(query1);
 		const [festivals] = await db.query(query2);
 
-		res.render("stages", { stages: stages, festivals: festivals });
+		res.json({ stages, festivals });
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -86,7 +88,7 @@ app.get("/vendors", async function (req, res) {
 	try {
 		const query = "SELECT * FROM vendors ORDER BY vendorName";
 		const [vendors] = await db.query(query);
-		res.render("vendors", { vendors: vendors });
+		res.json(vendors);
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -100,7 +102,7 @@ app.get("/sponsors", async function (req, res) {
 	try {
 		const query = "SELECT * FROM sponsors ORDER BY sponsorName";
 		const [sponsors] = await db.query(query);
-		res.render("sponsors", { sponsors: sponsors });
+		res.json(sponsors);
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -114,7 +116,7 @@ app.get("/staff", async function (req, res) {
 	try {
 		const query = "SELECT * FROM staff ORDER BY lastName, firstName";
 		const [staff] = await db.query(query);
-		res.render("staff", { staff: staff });
+		res.json(staff);
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -143,11 +145,7 @@ app.get("/performances", async function (req, res) {
 		const [artists] = await db.query(query2);
 		const [stages] = await db.query(query3);
 
-		res.render("performances", {
-			performances: performances,
-			artists: artists,
-			stages: stages,
-		});
+		res.json({ performances, artists, stages });
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -173,11 +171,7 @@ app.get("/vendor-assignments", async function (req, res) {
 		const [vendors] = await db.query(query2);
 		const [festivals] = await db.query(query3);
 
-		res.render("vendor-assignments", {
-			vendorAssignments: vendorAssignments,
-			vendors: vendors,
-			festivals: festivals,
-		});
+		res.json({ vendorAssignments, vendors, festivals });
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -202,12 +196,7 @@ app.get("/sponsorships", async function (req, res) {
 		const [sponsorships] = await db.query(query1);
 		const [sponsors] = await db.query(query2);
 		const [festivals] = await db.query(query3);
-
-		res.render("sponsorships", {
-			sponsorships: sponsorships,
-			sponsors: sponsors,
-			festivals: festivals,
-		});
+		res.json({ sponsorships, sponsors, festivals });
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
@@ -234,11 +223,7 @@ app.get("/staff-assignments", async function (req, res) {
 		const [staff] = await db.query(query2);
 		const [festivals] = await db.query(query3);
 
-		res.render("staff-assignments", {
-			staffAssignments: staffAssignments,
-			staff: staff,
-			festivals: festivals,
-		});
+		res.json({ staffAssignments, staff, festivals });
 	} catch (error) {
 		console.error("Error executing queries:", error);
 		res
