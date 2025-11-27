@@ -17,6 +17,7 @@ export const vendorAssignmentFields = (vendors, festivals) => [
 			value: v.vendorID,
 			label: v.vendorName,
 		})),
+		required: true,
 	},
 	{
 		name: "festivalID",
@@ -25,6 +26,7 @@ export const vendorAssignmentFields = (vendors, festivals) => [
 			value: f.festivalID,
 			label: f.festivalName,
 		})),
+		required: true,
 	},
 	{
 		name: "boothNumber",
@@ -37,6 +39,12 @@ export const vendorAssignmentFields = (vendors, festivals) => [
 		type: "number",
 		step: "0.01",
 		placeholder: "Enter fee",
+		required: true,
 	},
-	{ name: "assignmentDate", label: "Assignment Date", type: "date" },
+	{
+		name: "assignmentDate",
+		label: "Assignment Date",
+		type: "date",
+		required: true,
+	},
 ];

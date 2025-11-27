@@ -12,19 +12,27 @@ export const sponsorsFields = [
 		name: "sponsorName",
 		label: "Sponsor Name",
 		placeholder: "Enter sponsor name",
+		required: true,
 	},
-	{ name: "industry", label: "Industry", placeholder: "Enter industry" },
+	{
+		name: "industry",
+		label: "Industry",
+		placeholder: "Enter industry",
+		required: true,
+	},
 	{
 		name: "contactEmail",
 		label: "Contact Email",
 		type: "email",
 		placeholder: "Enter contact email",
+		required: true,
 	},
 	{
 		name: "contactPhone",
 		label: "Contact Phone",
 		type: "text",
 		placeholder: "Enter contact phone",
+		required: true,
 	},
 	{
 		name: "websiteURL",

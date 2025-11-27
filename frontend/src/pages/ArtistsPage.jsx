@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { artistColumns, artistFields } from "../config/artists";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 function ArtistsPage() {
 	const [data, setData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);

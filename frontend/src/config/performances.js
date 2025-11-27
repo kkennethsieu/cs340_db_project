@@ -18,6 +18,7 @@ export const performanceFields = (artists, stages) => [
 			value: a.artistID,
 			label: a.artistName,
 		})),
+		required: true,
 	},
 	{
 		name: "stageID",
@@ -26,11 +27,17 @@ export const performanceFields = (artists, stages) => [
 			value: s.stageID,
 			label: s.stageName,
 		})),
+		required: true,
 	},
 
-	{ name: "performanceDate", label: "Performance Date", type: "date" },
-	{ name: "startTime", label: "Start Time", type: "time" },
-	{ name: "endTime", label: "End Time", type: "time" },
+	{
+		name: "performanceDate",
+		label: "Performance Date",
+		type: "date",
+		required: true,
+	},
+	{ name: "startTime", label: "Start Time", type: "time", required: true },
+	{ name: "endTime", label: "End Time", type: "time", required: true },
 	{
 		name: "setupNotes",
 		label: "Setup Notes",

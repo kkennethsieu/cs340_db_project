@@ -4,7 +4,7 @@ import { sponsorshipColumns, sponsorshipFields } from "../config/sponsorships";
 import { useEffect } from "react";
 import { formatDateForInput } from "../helper/helper";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function SponsorshipsPage() {
 	const [data, setData] = useState({

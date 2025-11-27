@@ -2,16 +2,39 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { vendorColumns, vendorFields } from "../config/vendors";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function VendorsPage() {
 	const [data, setData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
 
-	const handleSubmit = (item) => {
-		console.log(`Submitted, ${item}`);
+	const handleSubmit = async (item, isEdit) => {
+		try {
+			const method = isEdit ? "PUT" : "POST";
+			const url = isEdit
+				? `${backendURL}/api/vendors/${item.vendorID}`
+				: `${backendURL}/api/vendors`;
+
+			const res = await fetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(item),
+			});
+
+			if (!res.ok) throw new Error("Failed");
+
+			const data = await res.json();
+			setData((prev) =>
+				isEdit
+					? prev.map((f) => (f.vendorID === data.vendorID ? data : f))
+					: [{ ...item, vendorID: data.vendorID }, ...prev]
+			);
+		} catch (err) {
+			console.error(err);
+		}
 	};
+
 	const handleDelete = async (item) => {
 		try {
 			await fetch(`${backendURL}/api/vendors/${item.vendorID}`, {

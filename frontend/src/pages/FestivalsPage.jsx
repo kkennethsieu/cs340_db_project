@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { festivalColumns, festivalFields } from "../config/festivals";
 import { formatDateForInput } from "../helper/helper";
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function FestivalsPage() {
 	const [data, setData] = useState([]);

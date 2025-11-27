@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { sponsorsColumns, sponsorsFields } from "../config/sponsors";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function SponsorsPage() {
 	const [data, setData] = useState([]);

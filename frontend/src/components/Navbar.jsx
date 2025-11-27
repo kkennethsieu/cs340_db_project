@@ -1,4 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+//Components
+import ConfirmationModal from "./ConfirmationModal";
+
+//Icons
 import { Icon } from "@iconify/react";
 import homeIcon from "@iconify-icons/mdi/home";
 import calendarIcon from "@iconify-icons/mdi/calendar";
@@ -11,9 +17,8 @@ import sponsorIcon from "@iconify-icons/mdi/currency-usd";
 import vendorIcon from "@iconify-icons/mdi/store";
 import usersIcon from "@iconify-icons/mdi/account-group";
 import resetIcon from "@iconify-icons/mdi/refresh";
-import ConfirmationModal from "./ConfirmationModal";
-import { useState } from "react";
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function Navbar() {
 	const navItems = [

@@ -42,7 +42,7 @@ export default function CrudPage({
 	const handleAddEdit = async (item) => {
 		if (onSubmit) {
 			const payload = selectedItem
-				? { ...item, festivalID: selectedItem.festivalID }
+				? { ...item, [idAccessor]: selectedItem[idAccessor] }
 				: item;
 			await onSubmit(payload, !!selectedItem);
 		} else {

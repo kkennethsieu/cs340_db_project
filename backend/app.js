@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cors());
 
-const PORT = 9040;
+const PORT = 9080;
 
 // Database
 const db = require("./database/db-connector");
@@ -304,7 +304,7 @@ app.put("/api/festivals/:id", async function (req, res) {
 
 		const query = `CALL sp_update_festival(?, ?, ?, ?, ?, ?, ?,?);`;
 
-		await db.query(query, [
+		const [result] = await db.query(query, [
 			req.params.id,
 			festivalName,
 			startDate,
@@ -314,16 +314,16 @@ app.put("/api/festivals/:id", async function (req, res) {
 			budget,
 			ticketPrice,
 		]);
-		res.status(200).json({
-			festivalID: Number(req.params.id),
-			festivalName,
-			startDate,
-			endDate,
-			location,
-			expectedAttendance,
-			budget,
-			ticketPrice,
-		});
+
+		if (result.affectedRows === 0) {
+			return res.status(404).json({ error: "Festival not found" });
+		}
+		const [rows] = await db.query(
+			"SELECT * FROM festivals WHERE festivalID = ?",
+			[req.params.id]
+		);
+
+		res.status(200).json(rows[0]);
 	} catch (error) {
 		console.error("Error updating festival:", error);
 		if (error.code === "ER_SIGNAL_EXCEPTION") {
@@ -451,8 +451,19 @@ app.post("/api/stages", async function (req, res) {
 			locationDescription,
 			hasCover,
 		} = req.body;
-		const query = `INSERT INTO stages (festivalID, stageName, capacity, stageType, 
-                       locationDescription, hasCover) VALUES (?, ?, ?, ?, ?, ?)`;
+		const finalHasCover = hasCover ? 1 : 0;
+
+		if (
+			!festivalID ||
+			!stageName ||
+			!capacity ||
+			!stageType ||
+			!locationDescription
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_stage(?, ?, ?, ?, ?, ?, @stageID); SELECT @stageID AS stageID;`;
 
 		const [result] = await db.query(query, [
 			festivalID,
@@ -460,13 +471,21 @@ app.post("/api/stages", async function (req, res) {
 			capacity,
 			stageType,
 			locationDescription,
-			hasCover,
+			finalHasCover,
 		]);
 
-		res.status(201).json({
-			message: "Stage created successfully",
-			stageID: result.insertId,
-		});
+		const stageID = result[1][0].stageID;
+		const [stageRow] = await db.query(
+			`
+				SELECT s.*, f.festivalName
+				FROM stages s
+				INNER JOIN festivals f ON s.festivalID = f.festivalID
+				WHERE s.stageID = ?
+  			`,
+			[stageID]
+		);
+
+		res.status(201).json(stageRow[0]);
 	} catch (error) {
 		console.error("Error creating stage:", error);
 		res.status(500).json({ error: "Failed to create stage" });
@@ -483,25 +502,44 @@ app.put("/api/stages/:id", async function (req, res) {
 			locationDescription,
 			hasCover,
 		} = req.body;
-		const query = `UPDATE stages SET festivalID = ?, stageName = ?, capacity = ?, 
-                       stageType = ?, locationDescription = ?, hasCover = ? WHERE stageID = ?`;
+		const finalHasCover = hasCover ? 1 : 0;
+
+		if (
+			!festivalID ||
+			!stageName ||
+			!capacity ||
+			!stageType ||
+			!locationDescription
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_stage(?, ?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
-			festivalID,
+			req.params.id,
 			stageName,
 			capacity,
 			stageType,
 			locationDescription,
-			hasCover,
-			req.params.id,
+			finalHasCover,
 		]);
 
 		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Stage not found" });
-			return;
+			return res.status(404).json({ error: "Stage not found" });
 		}
 
-		res.json({ message: "Stage updated successfully" });
+		const [stageRow] = await db.query(
+			`
+				SELECT s.*, f.festivalName
+				FROM stages s
+				INNER JOIN festivals f ON s.festivalID = f.festivalID
+				WHERE s.stageID = ?
+  			`,
+			[req.params.id]
+		);
+
+		res.status(201).json(stageRow[0]);
 	} catch (error) {
 		console.error("Error updating stage:", error);
 		res.status(500).json({ error: "Failed to update stage" });
@@ -534,20 +572,24 @@ app.post("/api/vendors", async function (req, res) {
 			contactPhone,
 			businessLicense,
 		} = req.body;
-		const query = `INSERT INTO vendors (vendorName, vendorType, contactEmail, 
-                       contactPhone, businessLicense) VALUES (?, ?, ?, ?, ?)`;
+
+		if (!vendorName || !vendorType || !contactEmail || !contactPhone) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_vendor(?, ?, ?, ?, ?, @vendorID); SELECT @vendorID AS vendorID;`;
 
 		const [result] = await db.query(query, [
 			vendorName,
 			vendorType,
 			contactEmail,
 			contactPhone,
-			businessLicense,
+			businessLicense || "",
 		]);
 
 		res.status(201).json({
 			message: "Vendor created successfully",
-			vendorID: result.insertId,
+			vendorID: result[1][0].vendorID,
 		});
 	} catch (error) {
 		console.error("Error creating vendor:", error);
@@ -557,6 +599,7 @@ app.post("/api/vendors", async function (req, res) {
 
 app.put("/api/vendors/:id", async function (req, res) {
 	try {
+		const { id } = req.params;
 		const {
 			vendorName,
 			vendorType,
@@ -564,27 +607,35 @@ app.put("/api/vendors/:id", async function (req, res) {
 			contactPhone,
 			businessLicense,
 		} = req.body;
-		const query = `UPDATE vendors SET vendorName = ?, vendorType = ?, contactEmail = ?, 
-                       contactPhone = ?, businessLicense = ? WHERE vendorID = ?`;
+		if (!vendorName || !vendorType || !contactEmail || !contactPhone) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+		const query = `CALL sp_update_vendor(?,?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
+			id,
 			vendorName,
 			vendorType,
 			contactEmail,
 			contactPhone,
-			businessLicense,
-			req.params.id,
+			businessLicense || "",
 		]);
 
 		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Vendor not found" });
-			return;
+			return res.status(404).json({ error: "Vendor not found" });
+		}
+		const [rows] = await db.query("SELECT * FROM vendors WHERE vendorID = ?", [
+			id,
+		]);
+
+		res.status(200).json(rows[0]);
+	} catch (error) {
+		console.error("Error updating festival:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
 		}
 
-		res.json({ message: "Vendor updated successfully" });
-	} catch (error) {
-		console.error("Error updating vendor:", error);
-		res.status(500).json({ error: "Failed to update vendor" });
+		return res.status(500).json({ error: "Failed to update festival" });
 	}
 });
 
@@ -758,23 +809,36 @@ app.post("/api/performances", async function (req, res) {
 			setupNotes,
 			soundcheckTime,
 		} = req.body;
-		const query = `INSERT INTO performances (artistID, stageID, performanceDate, startTime, 
-                       endTime, setupNotes, soundcheckTime) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+		if (!artistID || !stageID) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_performance(?, ?, ?, ?, ?, ?,?, @performanceID); SELECT @performanceID AS performanceID;`;
 
 		const [result] = await db.query(query, [
 			artistID,
 			stageID,
-			performanceDate,
-			startTime,
-			endTime,
-			setupNotes,
-			soundcheckTime,
+			performanceDate || "",
+			startTime || "",
+			endTime || "",
+			setupNotes || "",
+			soundcheckTime || "",
 		]);
 
-		res.status(201).json({
-			message: "Performance created successfully",
-			performanceID: result.insertId,
-		});
+		const performanceID = result[1][0].performanceID;
+		const [performanceRow] = await db.query(
+			`
+				SELECT p.*, a.artistName, s.stageName, f.festivalName
+				FROM performances p
+				INNER JOIN artists a ON p.artistID = a.artistID 
+				INNER JOIN stages s ON p.stageID = s.stageID 
+				INNER JOIN festivals f ON s.festivalID = f.festivalID 
+				WHERE p.performanceID = ?
+  			`,
+			[performanceID]
+		);
+
+		res.status(201).json(performanceRow[0]);
 	} catch (error) {
 		console.error("Error creating performance:", error);
 		res.status(500).json({ error: "Failed to create performance" });
@@ -792,11 +856,14 @@ app.put("/api/performances/:id", async function (req, res) {
 			setupNotes,
 			soundcheckTime,
 		} = req.body;
-		const query = `UPDATE performances SET artistID = ?, stageID = ?, performanceDate = ?, 
-                       startTime = ?, endTime = ?, setupNotes = ?, soundcheckTime = ? 
-                       WHERE performanceID = ?`;
+		if (!artistID || !stageID) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_performance(?,?,?,?,?,?,?,?)`;
 
 		const [result] = await db.query(query, [
+			req.params.id,
 			artistID,
 			stageID,
 			performanceDate,
@@ -804,7 +871,6 @@ app.put("/api/performances/:id", async function (req, res) {
 			endTime,
 			setupNotes,
 			soundcheckTime,
-			req.params.id,
 		]);
 
 		if (result.affectedRows === 0) {
@@ -812,7 +878,19 @@ app.put("/api/performances/:id", async function (req, res) {
 			return;
 		}
 
-		res.json({ message: "Performance updated successfully" });
+		const [performanceRow] = await db.query(
+			`
+				SELECT p.*, a.artistName, s.stageName, f.festivalName
+				FROM performances p
+				INNER JOIN artists a ON p.artistID = a.artistID 
+				INNER JOIN stages s ON p.stageID = s.stageID 
+				INNER JOIN festivals f ON s.festivalID = f.festivalID 
+				WHERE p.performanceID = ?
+  			`,
+			[req.params.id]
+		);
+
+		res.status(201).json(performanceRow[0]);
 	} catch (error) {
 		console.error("Error updating performance:", error);
 		res.status(500).json({ error: "Failed to update performance" });
@@ -845,21 +923,34 @@ app.post("/api/vendor-assignments", async function (req, res) {
 			registrationFee,
 			assignmentDate,
 		} = req.body;
-		const query = `INSERT INTO vendorAssignments (vendorID, festivalID, boothNumber, 
-                       registrationFee, assignmentDate) VALUES (?, ?, ?, ?, ?)`;
+		if (!vendorID || !festivalID || !registrationFee || !assignmentDate) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_vendorAssignment(?, ?, ?, ?, ?, @assignmentID); SELECT @assignmentID AS assignmentID;`;
 
 		const [result] = await db.query(query, [
 			vendorID,
 			festivalID,
-			boothNumber,
+			boothNumber || "",
 			registrationFee,
 			assignmentDate,
 		]);
 
-		res.status(201).json({
-			message: "Vendor assignment created successfully",
-			assignmentID: result.insertId,
-		});
+		const assignmentID = result[1][0].assignmentID;
+		const [assignmentRows] = await db.query(
+			`
+				SELECT va.assignmentID, va.boothNumber, va.registrationFee, va.assignmentDate,
+						v.vendorName, v.vendorType, f.festivalName
+				FROM vendorAssignments va
+				JOIN vendors v ON va.vendorID = v.vendorID
+				JOIN festivals f ON va.festivalID = f.festivalID
+				WHERE va.assignmentID = ?
+  			`,
+			[assignmentID]
+		);
+
+		res.status(201).json(assignmentRows[0]);
 	} catch (error) {
 		console.error("Error creating vendor assignment:", error);
 		res.status(500).json({ error: "Failed to create vendor assignment" });
@@ -875,24 +966,38 @@ app.put("/api/vendor-assignments/:id", async function (req, res) {
 			registrationFee,
 			assignmentDate,
 		} = req.body;
-		const query = `UPDATE vendorAssignments SET vendorID = ?, festivalID = ?, boothNumber = ?, 
-                       registrationFee = ?, assignmentDate = ? WHERE assignmentID = ?`;
+		if (!vendorID || !festivalID || !registrationFee || !assignmentDate) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_vendorAssignment(?,?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
+			req.params.id,
 			vendorID,
 			festivalID,
-			boothNumber,
+			boothNumber || "",
 			registrationFee,
 			assignmentDate,
-			req.params.id,
 		]);
 
 		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Vendor assignment not found" });
-			return;
+			return res.status(404).json({ error: "Vendor assignment not found" });
 		}
 
-		res.json({ message: "Vendor assignment updated successfully" });
+		const [assignmentRows] = await db.query(
+			`
+				SELECT va.assignmentID, va.boothNumber, va.registrationFee, va.assignmentDate,
+						v.vendorName, v.vendorType, f.festivalName
+				FROM vendorAssignments va
+				JOIN vendors v ON va.vendorID = v.vendorID
+				JOIN festivals f ON va.festivalID = f.festivalID
+				WHERE va.assignmentID = ?
+  			`,
+			[req.params.id]
+		);
+
+		res.status(201).json(assignmentRows[0]);
 	} catch (error) {
 		console.error("Error updating vendor assignment:", error);
 		res.status(500).json({ error: "Failed to update vendor assignment" });

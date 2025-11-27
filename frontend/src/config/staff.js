@@ -9,21 +9,38 @@ export const staffColumns = [
 ];
 
 export const staffFields = [
-	{ name: "firstName", label: "First Name", placeholder: "Enter first name" },
-	{ name: "lastName", label: "Last Name", placeholder: "Enter last name" },
+	{
+		name: "firstName",
+		label: "First Name",
+		placeholder: "Enter first name",
+		required: true,
+	},
+	{
+		name: "lastName",
+		label: "Last Name",
+		placeholder: "Enter last name",
+		required: true,
+	},
 	{
 		name: "email",
 		label: "Email",
 		type: "email",
 		placeholder: "Enter email",
+		required: true,
 	},
 	{
 		name: "phone",
 		label: "Phone",
 		type: "text",
 		placeholder: "Enter phone number",
+		required: true,
 	},
-	{ name: "role", label: "Role", placeholder: "Enter staff role" },
+	{
+		name: "role",
+		label: "Role",
+		placeholder: "Enter staff role",
+		required: true,
+	},
 	{
 		name: "hourlyRate",
 		label: "Hourly Rate",

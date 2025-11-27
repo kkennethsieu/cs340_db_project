@@ -7,7 +7,7 @@ import {
 import { formatDateForInput } from "../helper/helper";
 import { useEffect } from "react";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function StaffAssignmentsPage() {
 	const [data, setData] = useState({

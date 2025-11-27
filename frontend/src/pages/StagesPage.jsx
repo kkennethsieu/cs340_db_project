@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { stageColumns, stageFields } from "../config/stages";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function StagesPage() {
 	const [data, setData] = useState({
@@ -11,9 +11,34 @@ function StagesPage() {
 	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(false);
-	const handleSubmit = (item) => {
-		console.log(`Submitted, ${item}`);
+
+	const handleSubmit = async (item, isEdit) => {
+		try {
+			const method = isEdit ? "PUT" : "POST";
+			const url = isEdit
+				? `${backendURL}/api/stages/${item.stageID}`
+				: `${backendURL}/api/stages`;
+
+			const res = await fetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(item),
+			});
+
+			if (!res.ok) throw new Error("Failed to submit stage data");
+
+			const data = await res.json();
+			setData((prev) => ({
+				...prev,
+				stages: isEdit
+					? prev.stages.map((f) => (f.stageID === data.stageID ? data : f))
+					: [{ ...data, stageID: data.stageID }, ...prev.stages],
+			}));
+		} catch (err) {
+			console.error(err);
+		}
 	};
+
 	const handleDelete = async (item) => {
 		try {
 			await fetch(`${backendURL}/api/stages/${item.stageID}`, {

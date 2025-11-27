@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CrudPage from "../components/CrudPage";
 import { staffFields, staffColumns } from "../config/staff";
 
-const backendURL = "http://classwork.engr.oregonstate.edu:9040";
+const backendURL = "http://classwork.engr.oregonstate.edu:9080";
 
 function StaffPage() {
 	const [data, setData] = useState([]);

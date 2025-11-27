@@ -17,6 +17,7 @@ export const sponsorshipFields = (sponsors, festivals) => [
 			value: s.sponsorID,
 			label: s.sponsorName,
 		})),
+		required: true,
 	},
 	{
 		name: "festivalID",
@@ -25,6 +26,7 @@ export const sponsorshipFields = (sponsors, festivals) => [
 			value: f.festivalID,
 			label: f.festivalName,
 		})),
+		required: true,
 	},
 
 	{
@@ -33,13 +35,20 @@ export const sponsorshipFields = (sponsors, festivals) => [
 		type: "number",
 		step: "0.01",
 		placeholder: "Enter amount",
+		required: true,
 	},
 	{
 		name: "sponsorshipTier",
 		label: "Sponsorship Tier",
 		placeholder: "Gold, Silver, Bronze, etc.",
+		required: true,
 	},
-	{ name: "contractDate", label: "Contract Date", type: "date" },
+	{
+		name: "contractDate",
+		label: "Contract Date",
+		type: "date",
+		required: true,
+	},
 	{
 		name: "benefits",
 		label: "Benefits",

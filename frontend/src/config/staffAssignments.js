@@ -17,6 +17,7 @@ export const staffAssignmentFields = (staff, festivals) => [
 			value: s.staffID,
 			label: s.staffName,
 		})),
+		required: true,
 	},
 	{
 		name: "festivalID",
@@ -25,8 +26,14 @@ export const staffAssignmentFields = (staff, festivals) => [
 			value: f.festivalID,
 			label: f.festivalName,
 		})),
+		required: true,
 	},
-	{ name: "assignedDate", label: "Assigned Date", type: "date" },
+	{
+		name: "assignedDate",
+		label: "Assigned Date",
+		type: "date",
+		required: true,
+	},
 	{
 		name: "hoursWorked",
 		label: "Hours Worked",
