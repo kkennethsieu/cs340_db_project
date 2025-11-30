@@ -60,9 +60,9 @@ app.get("/artists", async function (req, res) {
 app.get("/stages", async function (req, res) {
 	try {
 		const query1 = `SELECT s.*, f.festivalName 
-                       FROM stages s 
-                       INNER JOIN festivals f ON s.festivalID = f.festivalID 
-                       ORDER BY f.festivalName, s.stageName`;
+                       		FROM stages s 
+                       		INNER JOIN festivals f ON s.festivalID = f.festivalID 
+                       		ORDER BY f.festivalName, s.stageName`;
 		const query2 =
 			"SELECT festivalID, festivalName FROM festivals ORDER BY festivalName";
 
@@ -364,8 +364,19 @@ app.post("/api/artists", async function (req, res) {
 			country,
 			websiteURL,
 		} = req.body;
-		const query = `INSERT INTO artists (artistName, genre, bookingFee, contactEmail, 
-                       contactPhone, country, websiteURL) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+		if (
+			!artistName || 
+			!genre || 
+			!bookingFee || 
+			!contactEmail || 
+			!contactPhone || 
+			!country
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_artist(?, ?, ?, ?, ?, ?, ?, @artistID); SELECT @artistID AS artistID;`;
 
 		const [result] = await db.query(query, [
 			artistName,
@@ -374,18 +385,22 @@ app.post("/api/artists", async function (req, res) {
 			contactEmail,
 			contactPhone,
 			country,
-			websiteURL,
+			websiteURL || "",
 		]);
 
-		res.status(201).json({
-			message: "Artist created successfully",
-			artistID: result.insertId,
-		});
+		const artistID = result[1][0].artistID;
+		const [artistRow] = await db.query(
+			"SELECT * FROM artists WHERE artistID = ?",
+			[artistID]
+		);
+
+		res.status(201).json(artistRow[0]);
 	} catch (error) {
 		console.error("Error creating artist:", error);
 		res.status(500).json({ error: "Failed to create artist" });
 	}
 });
+
 
 app.put("/api/artists/:id", async function (req, res) {
 	try {
@@ -398,29 +413,46 @@ app.put("/api/artists/:id", async function (req, res) {
 			country,
 			websiteURL,
 		} = req.body;
-		const query = `UPDATE artists SET artistName = ?, genre = ?, bookingFee = ?, 
-                       contactEmail = ?, contactPhone = ?, country = ?, websiteURL = ? 
-                       WHERE artistID = ?`;
+
+		if (
+			!artistName || 
+			!genre || 
+			!bookingFee || 
+			!contactEmail || 
+			!contactPhone || 
+			!country
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_artist(?, ?, ?, ?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
+			req.params.id,
 			artistName,
 			genre,
 			bookingFee,
 			contactEmail,
 			contactPhone,
 			country,
-			websiteURL,
-			req.params.id,
+			websiteURL || "",
 		]);
 
-		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Artist not found" });
-			return;
+		const [artistRow] = await db.query(
+			"SELECT * FROM artists WHERE artistID = ?",
+			[req.params.id]
+		);
+
+		if (!artistRow.length) {
+			return res.status(404).json({ error: "Artist not found" });
 		}
 
-		res.json({ message: "Artist updated successfully" });
+		res.status(200).json(artistRow[0]);
 	} catch (error) {
 		console.error("Error updating artist:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to update artist" });
 	}
 });
@@ -660,23 +692,40 @@ app.delete("/api/vendors/:id", async function (req, res) {
 
 app.post("/api/sponsors", async function (req, res) {
 	try {
-		const { sponsorName, industry, contactEmail, contactPhone, websiteURL } =
-			req.body;
-		const query = `INSERT INTO sponsors (sponsorName, industry, contactEmail, 
-                       contactPhone, websiteURL) VALUES (?, ?, ?, ?, ?)`;
+		const { 
+			sponsorName, 
+			industry, 
+			contactEmail, 
+			contactPhone, 
+			websiteURL 
+		} = req.body;
+
+		if (
+			!sponsorName || 
+			!industry || 
+			!contactEmail || 
+			!contactPhone
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_sponsor(?, ?, ?, ?, ?, @sponsorID); SELECT @sponsorID AS sponsorID;`;
 
 		const [result] = await db.query(query, [
 			sponsorName,
 			industry,
 			contactEmail,
 			contactPhone,
-			websiteURL,
+			websiteURL || "",
 		]);
 
-		res.status(201).json({
-			message: "Sponsor created successfully",
-			sponsorID: result.insertId,
-		});
+		const sponsorID = result[1][0].sponsorID;
+		const [sponsorRow] = await db.query(
+			"SELECT * FROM sponsors WHERE sponsorID = ?",
+			[sponsorID]
+		);
+
+		res.status(201).json(sponsorRow[0]);
 	} catch (error) {
 		console.error("Error creating sponsor:", error);
 		res.status(500).json({ error: "Failed to create sponsor" });
@@ -685,28 +734,49 @@ app.post("/api/sponsors", async function (req, res) {
 
 app.put("/api/sponsors/:id", async function (req, res) {
 	try {
-		const { sponsorName, industry, contactEmail, contactPhone, websiteURL } =
-			req.body;
-		const query = `UPDATE sponsors SET sponsorName = ?, industry = ?, contactEmail = ?, 
-                       contactPhone = ?, websiteURL = ? WHERE sponsorID = ?`;
+		const { 
+			sponsorName, 
+			industry, 
+			contactEmail, 
+			contactPhone, 
+			websiteURL 
+		} = req.body;
+
+		if (
+			!sponsorName || 
+			!industry || 
+			!contactEmail || 
+			!contactPhone
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_sponsor(?, ?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
+			req.params.id,
 			sponsorName,
 			industry,
 			contactEmail,
 			contactPhone,
-			websiteURL,
-			req.params.id,
+			websiteURL || "",
 		]);
 
-		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Sponsor not found" });
-			return;
+		const [sponsorRow] = await db.query(
+			"SELECT * FROM sponsors WHERE sponsorID = ?",
+			[req.params.id]
+		);
+
+		if (!sponsorRow.length) {
+			return res.status(404).json({ error: "Sponsor not found" });
 		}
 
-		res.json({ message: "Sponsor updated successfully" });
+		res.status(200).json(sponsorRow[0]);
 	} catch (error) {
 		console.error("Error updating sponsor:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to update sponsor" });
 	}
 });
@@ -730,9 +800,27 @@ app.delete("/api/sponsors/:id", async function (req, res) {
 
 app.post("/api/staff", async function (req, res) {
 	try {
-		const { firstName, lastName, email, phone, role, hourlyRate } = req.body;
-		const query = `INSERT INTO staff (firstName, lastName, email, phone, role, hourlyRate) 
-                       VALUES (?, ?, ?, ?, ?, ?)`;
+		const { 
+			firstName, 
+			lastName, 
+			email, 
+			phone, 
+			role, 
+			hourlyRate 
+		} = req.body;
+
+		if (
+			!firstName || 
+			!lastName || 
+			!email || 
+			!phone || 
+			!role || 
+			!hourlyRate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_staff(?, ?, ?, ?, ?, ?, @staffID); SELECT @staffID AS staffID;`;
 
 		const [result] = await db.query(query, [
 			firstName,
@@ -743,40 +831,69 @@ app.post("/api/staff", async function (req, res) {
 			hourlyRate,
 		]);
 
-		res.status(201).json({
-			message: "Staff member created successfully",
-			staffID: result.insertId,
-		});
+		const staffID = result[1][0].staffID;
+		const [staffRow] = await db.query(
+			"SELECT * FROM staff WHERE staffID = ?",
+			[staffID]
+		);
+
+		res.status(201).json(staffRow[0]);
 	} catch (error) {
 		console.error("Error creating staff member:", error);
 		res.status(500).json({ error: "Failed to create staff member" });
 	}
 });
 
+
 app.put("/api/staff/:id", async function (req, res) {
 	try {
-		const { firstName, lastName, email, phone, role, hourlyRate } = req.body;
-		const query = `UPDATE staff SET firstName = ?, lastName = ?, email = ?, 
-                       phone = ?, role = ?, hourlyRate = ? WHERE staffID = ?`;
+		const { 
+			firstName, 
+			lastName, 
+			email, 
+			phone, 
+			role, 
+			hourlyRate 
+		} = req.body;
 
-		const [result] = await db.query(query, [
+		if (
+			!firstName || 
+			!lastName || 
+			!email || 
+			!phone || 
+			!role || 
+			!hourlyRate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_staff(?, ?, ?, ?, ?, ?, ?)`;
+
+		const[result] = await db.query(query, [
+			req.params.id,
 			firstName,
 			lastName,
 			email,
 			phone,
 			role,
 			hourlyRate,
-			req.params.id,
 		]);
 
-		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Staff member not found" });
-			return;
+		const [staffRow] = await db.query(
+			"SELECT * FROM staff WHERE staffID = ?",
+			[req.params.id]
+		);
+
+		if (!staffRow.length) {
+			return res.status(404).json({ error: "Staff member not found" });
 		}
 
-		res.json({ message: "Staff member updated successfully" });
+		res.status(200).json(staffRow[0]);
 	} catch (error) {
 		console.error("Error updating staff member:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to update staff member" });
 	}
 });
@@ -795,6 +912,7 @@ app.delete("/api/staff/:id", async function (req, res) {
 		return res.status(500).json({ error: "Failed to delete staff" });
 	}
 });
+
 
 // ===== PERFORMANCES API =====
 
@@ -1033,8 +1151,18 @@ app.post("/api/sponsorships", async function (req, res) {
 			contractDate,
 			benefits,
 		} = req.body;
-		const query = `INSERT INTO sponsorships (sponsorID, festivalID, sponsorshipAmount, 
-                       sponsorshipTier, contractDate, benefits) VALUES (?, ?, ?, ?, ?, ?)`;
+
+		if (
+			!sponsorID || 
+			!festivalID || 
+			!sponsorshipAmount || 
+			!sponsorshipTier || 
+			!contractDate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_sponsorship(?, ?, ?, ?, ?, ?, @sponsorshipID); SELECT @sponsorshipID AS sponsorshipID;`;
 
 		const [result] = await db.query(query, [
 			sponsorID,
@@ -1042,18 +1170,31 @@ app.post("/api/sponsorships", async function (req, res) {
 			sponsorshipAmount,
 			sponsorshipTier,
 			contractDate,
-			benefits,
+			benefits || "",
 		]);
 
-		res.status(201).json({
-			message: "Sponsorship created successfully",
-			sponsorshipID: result.insertId,
-		});
+		const sponsorshipID = result[1][0].sponsorshipID;
+		const [sponsorshipRow] = await db.query(
+			`
+				SELECT sp.*, s.sponsorName, s.industry, f.festivalName 
+				FROM sponsorships sp 
+				INNER JOIN sponsors s ON sp.sponsorID = s.sponsorID 
+				INNER JOIN festivals f ON sp.festivalID = f.festivalID 
+				WHERE sp.sponsorshipID = ?
+			`,
+			[sponsorshipID]
+		);
+
+		res.status(201).json(sponsorshipRow[0]);
 	} catch (error) {
 		console.error("Error creating sponsorship:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(400).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to create sponsorship" });
 	}
 });
+
 
 app.put("/api/sponsorships/:id", async function (req, res) {
 	try {
@@ -1065,27 +1206,50 @@ app.put("/api/sponsorships/:id", async function (req, res) {
 			contractDate,
 			benefits,
 		} = req.body;
-		const query = `UPDATE sponsorships SET sponsorID = ?, festivalID = ?, sponsorshipAmount = ?, 
-                       sponsorshipTier = ?, contractDate = ?, benefits = ? WHERE sponsorshipID = ?`;
+		
+		if (
+			!sponsorID || 
+			!festivalID || 
+			!sponsorshipAmount || 
+			!sponsorshipTier || 
+			!contractDate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_sponsorship(?, ?, ?, ?, ?, ?, ?)`;
 
 		const [result] = await db.query(query, [
+			req.params.id,
 			sponsorID,
 			festivalID,
 			sponsorshipAmount,
 			sponsorshipTier,
 			contractDate,
-			benefits,
-			req.params.id,
+			benefits || "",
 		]);
 
-		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Sponsorship not found" });
-			return;
+		const [sponsorshipRow] = await db.query(
+			`
+				SELECT sp.*, s.sponsorName, s.industry, f.festivalName 
+				FROM sponsorships sp 
+				INNER JOIN sponsors s ON sp.sponsorID = s.sponsorID 
+				INNER JOIN festivals f ON sp.festivalID = f.festivalID 
+				WHERE sp.sponsorshipID = ?
+			`,
+			[req.params.id]
+		);
+
+		if (!sponsorshipRow.length) {
+			return res.status(404).json({ error: "Sponsorship not found" });
 		}
 
-		res.json({ message: "Sponsorship updated successfully" });
+		res.status(200).json(sponsorshipRow[0]);
 	} catch (error) {
 		console.error("Error updating sponsorship:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to update sponsorship" });
 	}
 });
@@ -1109,56 +1273,110 @@ app.delete("/api/sponsorships/:id", async function (req, res) {
 
 app.post("/api/staff-assignments", async function (req, res) {
 	try {
-		const { staffID, festivalID, assignedDate, hoursWorked, shiftNotes } =
-			req.body;
-		const query = `INSERT INTO staffAssignments (staffID, festivalID, assignedDate, 
-                       hoursWorked, shiftNotes) VALUES (?, ?, ?, ?, ?)`;
+		const { 
+			staffID, 
+			festivalID, 
+			assignedDate, 
+			hoursWorked, 
+			shiftNotes 
+		} = req.body;
+
+		if (
+			!staffID || 
+			!festivalID || 
+			!assignedDate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_create_staff_assignment(?, ?, ?, ?, ?, @staffAssignmentID); SELECT @staffAssignmentID AS staffAssignmentID;`;
 
 		const [result] = await db.query(query, [
 			staffID,
 			festivalID,
 			assignedDate,
-			hoursWorked,
-			shiftNotes,
+			hoursWorked || 0,
+			shiftNotes || "",
 		]);
 
-		res.status(201).json({
-			message: "Staff assignment created successfully",
-			staffAssignmentID: result.insertId,
-		});
+		const staffAssignmentID = result[1][0].staffAssignmentID;
+		const [assignmentRow] = await db.query(
+			`
+				SELECT sa.*, CONCAT(st.firstName, ' ', st.lastName) AS staffName, 
+				       st.role, st.hourlyRate, f.festivalName 
+				FROM staffAssignments sa 
+				INNER JOIN staff st ON sa.staffID = st.staffID 
+				INNER JOIN festivals f ON sa.festivalID = f.festivalID 
+				WHERE sa.staffAssignmentID = ?
+			`,
+			[staffAssignmentID]
+		);
+
+		res.status(201).json(assignmentRow[0]);
 	} catch (error) {
 		console.error("Error creating staff assignment:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(400).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to create staff assignment" });
 	}
 });
 
 app.put("/api/staff-assignments/:id", async function (req, res) {
 	try {
-		const { staffID, festivalID, assignedDate, hoursWorked, shiftNotes } =
-			req.body;
-		const query = `UPDATE staffAssignments SET staffID = ?, festivalID = ?, assignedDate = ?, 
-                       hoursWorked = ?, shiftNotes = ? WHERE staffAssignmentID = ?`;
+		const { 
+			staffID, 
+			festivalID, 
+			assignedDate, 
+			hoursWorked, 
+			shiftNotes 
+		} = req.body;
 
-		const [result] = await db.query(query, [
+		if (
+			!staffID || 
+			!festivalID || 
+			!assignedDate
+		) {
+			return res.status(400).json({ error: "Missing data fields" });
+		}
+
+		const query = `CALL sp_update_staff_assignment(?, ?, ?, ?, ?, ?)`;
+
+		const[result] = await db.query(query, [
+			req.params.id,
 			staffID,
 			festivalID,
 			assignedDate,
-			hoursWorked,
-			shiftNotes,
-			req.params.id,
+			hoursWorked || 0,
+			shiftNotes || "",
 		]);
 
-		if (result.affectedRows === 0) {
-			res.status(404).json({ error: "Staff assignment not found" });
-			return;
+		const [assignmentRow] = await db.query(
+			`
+				SELECT sa.*, CONCAT(st.firstName, ' ', st.lastName) AS staffName, 
+				       st.role, st.hourlyRate, f.festivalName 
+				FROM staffAssignments sa 
+				INNER JOIN staff st ON sa.staffID = st.staffID 
+				INNER JOIN festivals f ON sa.festivalID = f.festivalID 
+				WHERE sa.staffAssignmentID = ?
+			`,
+			[req.params.id]
+		);
+
+		if (!assignmentRow.length) {
+			return res.status(404).json({ error: "Staff assignment not found" });
 		}
 
-		res.json({ message: "Staff assignment updated successfully" });
+		res.status(200).json(assignmentRow[0]);
 	} catch (error) {
 		console.error("Error updating staff assignment:", error);
+		if (error.code === "ER_SIGNAL_EXCEPTION") {
+			return res.status(404).json({ error: error.sqlMessage });
+		}
 		res.status(500).json({ error: "Failed to update staff assignment" });
 	}
 });
+
 
 app.delete("/api/staff-assignments/:id", async function (req, res) {
 	try {
