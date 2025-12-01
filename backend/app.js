@@ -366,11 +366,11 @@ app.post("/api/artists", async function (req, res) {
 		} = req.body;
 
 		if (
-			!artistName || 
-			!genre || 
-			!bookingFee || 
-			!contactEmail || 
-			!contactPhone || 
+			!artistName ||
+			!genre ||
+			!bookingFee ||
+			!contactEmail ||
+			!contactPhone ||
 			!country
 		) {
 			return res.status(400).json({ error: "Missing data fields" });
@@ -401,7 +401,6 @@ app.post("/api/artists", async function (req, res) {
 	}
 });
 
-
 app.put("/api/artists/:id", async function (req, res) {
 	try {
 		const {
@@ -415,11 +414,11 @@ app.put("/api/artists/:id", async function (req, res) {
 		} = req.body;
 
 		if (
-			!artistName || 
-			!genre || 
-			!bookingFee || 
-			!contactEmail || 
-			!contactPhone || 
+			!artistName ||
+			!genre ||
+			!bookingFee ||
+			!contactEmail ||
+			!contactPhone ||
 			!country
 		) {
 			return res.status(400).json({ error: "Missing data fields" });
@@ -692,20 +691,10 @@ app.delete("/api/vendors/:id", async function (req, res) {
 
 app.post("/api/sponsors", async function (req, res) {
 	try {
-		const { 
-			sponsorName, 
-			industry, 
-			contactEmail, 
-			contactPhone, 
-			websiteURL 
-		} = req.body;
+		const { sponsorName, industry, contactEmail, contactPhone, websiteURL } =
+			req.body;
 
-		if (
-			!sponsorName || 
-			!industry || 
-			!contactEmail || 
-			!contactPhone
-		) {
+		if (!sponsorName || !industry || !contactEmail || !contactPhone) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
@@ -734,20 +723,10 @@ app.post("/api/sponsors", async function (req, res) {
 
 app.put("/api/sponsors/:id", async function (req, res) {
 	try {
-		const { 
-			sponsorName, 
-			industry, 
-			contactEmail, 
-			contactPhone, 
-			websiteURL 
-		} = req.body;
+		const { sponsorName, industry, contactEmail, contactPhone, websiteURL } =
+			req.body;
 
-		if (
-			!sponsorName || 
-			!industry || 
-			!contactEmail || 
-			!contactPhone
-		) {
+		if (!sponsorName || !industry || !contactEmail || !contactPhone) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
@@ -800,23 +779,9 @@ app.delete("/api/sponsors/:id", async function (req, res) {
 
 app.post("/api/staff", async function (req, res) {
 	try {
-		const { 
-			firstName, 
-			lastName, 
-			email, 
-			phone, 
-			role, 
-			hourlyRate 
-		} = req.body;
+		const { firstName, lastName, email, phone, role, hourlyRate } = req.body;
 
-		if (
-			!firstName || 
-			!lastName || 
-			!email || 
-			!phone || 
-			!role || 
-			!hourlyRate
-		) {
+		if (!firstName || !lastName || !email || !phone || !role || !hourlyRate) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
@@ -832,10 +797,9 @@ app.post("/api/staff", async function (req, res) {
 		]);
 
 		const staffID = result[1][0].staffID;
-		const [staffRow] = await db.query(
-			"SELECT * FROM staff WHERE staffID = ?",
-			[staffID]
-		);
+		const [staffRow] = await db.query("SELECT * FROM staff WHERE staffID = ?", [
+			staffID,
+		]);
 
 		res.status(201).json(staffRow[0]);
 	} catch (error) {
@@ -844,32 +808,17 @@ app.post("/api/staff", async function (req, res) {
 	}
 });
 
-
 app.put("/api/staff/:id", async function (req, res) {
 	try {
-		const { 
-			firstName, 
-			lastName, 
-			email, 
-			phone, 
-			role, 
-			hourlyRate 
-		} = req.body;
+		const { firstName, lastName, email, phone, role, hourlyRate } = req.body;
 
-		if (
-			!firstName || 
-			!lastName || 
-			!email || 
-			!phone || 
-			!role || 
-			!hourlyRate
-		) {
+		if (!firstName || !lastName || !email || !phone || !role || !hourlyRate) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
 		const query = `CALL sp_update_staff(?, ?, ?, ?, ?, ?, ?)`;
 
-		const[result] = await db.query(query, [
+		const [result] = await db.query(query, [
 			req.params.id,
 			firstName,
 			lastName,
@@ -879,10 +828,9 @@ app.put("/api/staff/:id", async function (req, res) {
 			hourlyRate,
 		]);
 
-		const [staffRow] = await db.query(
-			"SELECT * FROM staff WHERE staffID = ?",
-			[req.params.id]
-		);
+		const [staffRow] = await db.query("SELECT * FROM staff WHERE staffID = ?", [
+			req.params.id,
+		]);
 
 		if (!staffRow.length) {
 			return res.status(404).json({ error: "Staff member not found" });
@@ -912,7 +860,6 @@ app.delete("/api/staff/:id", async function (req, res) {
 		return res.status(500).json({ error: "Failed to delete staff" });
 	}
 });
-
 
 // ===== PERFORMANCES API =====
 
@@ -1153,10 +1100,10 @@ app.post("/api/sponsorships", async function (req, res) {
 		} = req.body;
 
 		if (
-			!sponsorID || 
-			!festivalID || 
-			!sponsorshipAmount || 
-			!sponsorshipTier || 
+			!sponsorID ||
+			!festivalID ||
+			!sponsorshipAmount ||
+			!sponsorshipTier ||
 			!contractDate
 		) {
 			return res.status(400).json({ error: "Missing data fields" });
@@ -1195,7 +1142,6 @@ app.post("/api/sponsorships", async function (req, res) {
 	}
 });
 
-
 app.put("/api/sponsorships/:id", async function (req, res) {
 	try {
 		const {
@@ -1206,12 +1152,12 @@ app.put("/api/sponsorships/:id", async function (req, res) {
 			contractDate,
 			benefits,
 		} = req.body;
-		
+
 		if (
-			!sponsorID || 
-			!festivalID || 
-			!sponsorshipAmount || 
-			!sponsorshipTier || 
+			!sponsorID ||
+			!festivalID ||
+			!sponsorshipAmount ||
+			!sponsorshipTier ||
 			!contractDate
 		) {
 			return res.status(400).json({ error: "Missing data fields" });
@@ -1273,19 +1219,10 @@ app.delete("/api/sponsorships/:id", async function (req, res) {
 
 app.post("/api/staff-assignments", async function (req, res) {
 	try {
-		const { 
-			staffID, 
-			festivalID, 
-			assignedDate, 
-			hoursWorked, 
-			shiftNotes 
-		} = req.body;
+		const { staffID, festivalID, assignedDate, hoursWorked, shiftNotes } =
+			req.body;
 
-		if (
-			!staffID || 
-			!festivalID || 
-			!assignedDate
-		) {
+		if (!staffID || !festivalID || !assignedDate) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
@@ -1324,25 +1261,16 @@ app.post("/api/staff-assignments", async function (req, res) {
 
 app.put("/api/staff-assignments/:id", async function (req, res) {
 	try {
-		const { 
-			staffID, 
-			festivalID, 
-			assignedDate, 
-			hoursWorked, 
-			shiftNotes 
-		} = req.body;
+		const { staffID, festivalID, assignedDate, hoursWorked, shiftNotes } =
+			req.body;
 
-		if (
-			!staffID || 
-			!festivalID || 
-			!assignedDate
-		) {
+		if (!staffID || !festivalID || !assignedDate) {
 			return res.status(400).json({ error: "Missing data fields" });
 		}
 
 		const query = `CALL sp_update_staff_assignment(?, ?, ?, ?, ?, ?)`;
 
-		const[result] = await db.query(query, [
+		const [result] = await db.query(query, [
 			req.params.id,
 			staffID,
 			festivalID,
@@ -1376,7 +1304,6 @@ app.put("/api/staff-assignments/:id", async function (req, res) {
 		res.status(500).json({ error: "Failed to update staff assignment" });
 	}
 });
-
 
 app.delete("/api/staff-assignments/:id", async function (req, res) {
 	try {
