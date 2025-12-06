@@ -4,16 +4,16 @@ let mysql = require("mysql2");
 // Create a 'connection pool' using the provided credentials
 
 const pool = mysql
-	.createPool({
-		waitForConnections: true,
-		connectionLimit: 10,
-		host: "classmysql.engr.oregonstate.edu",
-		user: "cs340_sieuk",
-		password: "2137",
-		database: "cs340_sieuk",
-		multipleStatements: true,
-	})
-	.promise(); // This makes it so we can use async / wait
+  .createPool({
+    waitForConnections: true,
+    connectionLimit: 10,
+    host: "classmysql.engr.oregonstate.edu",
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    multipleStatements: true,
+  })
+  .promise(); // This makes it so we can use async / wait
 
 module.exports = pool;
 
