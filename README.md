@@ -4,6 +4,10 @@
 
 A **database design project** created to practice relational database modeling, schema design, and SQL queries. This system focuses on managing music festivals, including **artists, stages, staff, sponsors, vendors, and performances**.
 
+Link: http://classwork.engr.oregonstate.edu:9020/
+
+- Note: Must be connected to OSU servers using a VPN
+
 ---
 
 ## 📝 Project Overview
